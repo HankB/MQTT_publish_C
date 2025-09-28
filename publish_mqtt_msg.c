@@ -37,10 +37,10 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     if (!mqtt_initiailzed)
     {
         rc = init_mqtt();
+        if (chatty)
+            printf("init_mqtt() returned %d\n", rc);
         if (0 != rc)
         {
-            if (chatty)
-                printf("init_mqtt() returned %d\n", rc);
             return rc;
         }
     }
@@ -74,7 +74,7 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     MQTTClient_deliveryToken token = 0;
 
-    pubmsg.payload =  (char *)payload;
+    pubmsg.payload = (char *)payload;
     pubmsg.payloadlen = strlen(payload);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
