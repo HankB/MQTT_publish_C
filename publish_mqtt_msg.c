@@ -86,5 +86,6 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     printf("Message with delivery token %d delivered\n", token);
     MQTTClient_disconnect(client, 10000);
 
+    //MQTTClient_destroy(&client);
     return rc;
 }
