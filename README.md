@@ -31,3 +31,4 @@ gcc -o publish_mqtt_msg publish_mqtt_msg.c test_publish.c -lpaho-mqtt3c
 ## Resources
 
 * <https://github.com/eclipse-paho/paho.mqtt.c>
+* <https://eclipse.dev/paho/files/mqttdoc/MQTTClient/html/pubsync.html>
