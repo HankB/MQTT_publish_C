@@ -14,6 +14,7 @@
 static bool chatty = true; // control console output
 static MQTTClient client;
 static MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+static MQTTClient_message pubmsg = MQTTClient_message_initializer;
 
 #define ID_LEN 30
 static char client_id[ID_LEN];
@@ -22,7 +23,7 @@ static time_t t;
 
 static bool mqtt_initiailzed = false;
 
-static int init_mqtt(const char *broker)
+static int init_mqtt(const char *broker, int QOS)
 {
     int rc;
     // prepare some strings used to communicate with broker
@@ -30,6 +31,8 @@ static int init_mqtt(const char *broker)
     snprintf(client_id, ID_LEN, "%s%8.8X", client_prefix, rand());
     conn_opts.keepAliveInterval = 10;
     conn_opts.cleansession = 1;
+    pubmsg.qos = QOS;
+    pubmsg.retained = 0;
 
     if ((rc = MQTTClient_create(&client, broker, client_id,
                                 MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
@@ -45,7 +48,6 @@ static int init_mqtt(const char *broker)
 
 #define TIMEOUT 10000L
 
-static MQTTClient_message pubmsg = MQTTClient_message_initializer;
 static MQTTClient_deliveryToken token = 0;
 
 int publish_mqtt_msg(const char *topic, const char *payload, const char *broker, int QOS)
@@ -54,7 +56,7 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
 
     if (!mqtt_initiailzed)
     {
-        rc = init_mqtt(broker);
+        rc = init_mqtt(broker, QOS);
         if (chatty)
             printf("init_mqtt() returned %d\n", rc);
         if (0 != rc)
@@ -76,8 +78,6 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
 
     pubmsg.payload = (char *)payload;
     pubmsg.payloadlen = strlen(payload);
-    pubmsg.qos = QOS;
-    pubmsg.retained = 0;
     MQTTClient_publishMessage(client, topic, &pubmsg, &token);
     printf("Waiting for up to %d seconds for publication of %s\n"
            "on topic %s for client with ClientID: %s\n",
