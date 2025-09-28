@@ -16,3 +16,15 @@ This is needed for another project written in `C` and the plan is to produce a s
 
 Write two C files, one of which performs the actions described abote and another that calls it in order to test the function.
 
+## Requirements
+
+```text
+sudo apt install libpaho-mqtt-dev
+```
+
+## Build
+
+```text
+gcc -o publish_mqtt_msg publish_mqtt_msg.c test_publish.c -lpaho-mqtt3cs
+```
+
