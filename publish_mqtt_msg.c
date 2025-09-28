@@ -1,5 +1,5 @@
 /*
- * Connect to an MQTRT broker, publish a message, disconnect
+ * Connect to an MQTT broker, publish a message, disconnect
  * and return a status.
  */
 
@@ -27,6 +27,8 @@ static int init_mqtt()
     mqtt_initiailzed = true;
     return 0;
 }
+
+#define TIMEOUT 10000L
 
 int publish_mqtt_msg(const char *topic, const char *payload, const char *broker, int QOS)
 {
@@ -72,17 +74,14 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     MQTTClient_deliveryToken token = 0;
 
-#define TOPIC "This/is/only/a/test."
-#define PAYLOAD "Had this been an actual emergency..."
-#define TIMEOUT 10000L
-    pubmsg.payload = PAYLOAD;
-    pubmsg.payloadlen = strlen(PAYLOAD);
+    pubmsg.payload =  (char *)payload;
+    pubmsg.payloadlen = strlen(payload);
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
-    MQTTClient_publishMessage(client, TOPIC, &pubmsg, &token);
+    MQTTClient_publishMessage(client, topic, &pubmsg, &token);
     printf("Waiting for up to %d seconds for publication of %s\n"
            "on topic %s for client with ClientID: %s\n",
-           (int)(TIMEOUT / 1000), PAYLOAD, TOPIC, client_id);
+           (int)(TIMEOUT / 1000), payload, topic, client_id);
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
     printf("Message with delivery token %d delivered\n", token);
     MQTTClient_disconnect(client, 10000);
