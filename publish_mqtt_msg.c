@@ -24,6 +24,10 @@ static bool mqtt_initiailzed = false;
 
 static int init_mqtt()
 {
+    // prepare some strings used to communicate with broker
+    srand((unsigned)time(&t)); // seed RNG
+    snprintf(client_id, ID_LEN, "%s%8.8X", client_prefix, rand());
+    
     mqtt_initiailzed = true;
     return 0;
 }
@@ -44,9 +48,6 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
             return rc;
         }
     }
-    // prepare some strings used to communicate with broker
-    srand((unsigned)time(&t)); // seed RNG
-    snprintf(client_id, ID_LEN, "%s%8.8X", client_prefix, rand());
 
     if ((rc = MQTTClient_create(&client, broker, client_id,
                                 MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
