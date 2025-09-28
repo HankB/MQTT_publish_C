@@ -27,12 +27,17 @@ static int init_mqtt()
     // prepare some strings used to communicate with broker
     srand((unsigned)time(&t)); // seed RNG
     snprintf(client_id, ID_LEN, "%s%8.8X", client_prefix, rand());
-    
+    conn_opts.keepAliveInterval = 10;
+    conn_opts.cleansession = 1;
+
     mqtt_initiailzed = true;
     return 0;
 }
 
 #define TIMEOUT 10000L
+
+static MQTTClient_message pubmsg = MQTTClient_message_initializer;
+static MQTTClient_deliveryToken token = 0;
 
 int publish_mqtt_msg(const char *topic, const char *payload, const char *broker, int QOS)
 {
@@ -61,19 +66,12 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     // which was not particularly helpful. Reverted to (mostly)
     // https://github.com/HankB/MQTT_will/blob/main/C/MQTT_will.c
     // and then https://eclipse.dev/paho/files/mqttdoc/MQTTClient/html/pubsync.html
-    conn_opts.keepAliveInterval = 10;
-    conn_opts.cleansession = 1;
-    // conn_opts.username = "username";
-    // conn_opts.password = "password";
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
     {
         if (chatty)
             printf("MQTTClient_connect() returned %d\n", rc);
         return rc;
     }
-
-    MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    MQTTClient_deliveryToken token = 0;
 
     pubmsg.payload = (char *)payload;
     pubmsg.payloadlen = strlen(payload);
