@@ -70,7 +70,7 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     }
 
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
-    MQTTClient_deliveryToken token;
+    MQTTClient_deliveryToken token = 0;
 
 #define TOPIC "This/is/only/a/test."
 #define PAYLOAD "Had this been an actual emergency..."

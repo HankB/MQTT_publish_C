@@ -25,7 +25,7 @@ sudo apt install libpaho-mqtt-dev
 ## Build
 
 ```text
-gcc -o publish_mqtt_msg publish_mqtt_msg.c test_publish.c -lpaho-mqtt3c
+gcc -Wall [-g] -o publish_mqtt_msg publish_mqtt_msg.c test_publish.c -lpaho-mqtt3c
 ```
 
 ## Resources
