@@ -22,13 +22,22 @@ static time_t t;
 
 static bool mqtt_initiailzed = false;
 
-static int init_mqtt()
+static int init_mqtt(const char *broker)
 {
+    int rc;
     // prepare some strings used to communicate with broker
     srand((unsigned)time(&t)); // seed RNG
     snprintf(client_id, ID_LEN, "%s%8.8X", client_prefix, rand());
     conn_opts.keepAliveInterval = 10;
     conn_opts.cleansession = 1;
+
+    if ((rc = MQTTClient_create(&client, broker, client_id,
+                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
+    {
+        if (chatty)
+            printf("MQTTClient_create() returned %d\n", rc);
+        return rc;
+    }
 
     mqtt_initiailzed = true;
     return 0;
@@ -45,21 +54,13 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
 
     if (!mqtt_initiailzed)
     {
-        rc = init_mqtt();
+        rc = init_mqtt(broker);
         if (chatty)
             printf("init_mqtt() returned %d\n", rc);
         if (0 != rc)
         {
             return rc;
         }
-    }
-
-    if ((rc = MQTTClient_create(&client, broker, client_id,
-                                MQTTCLIENT_PERSISTENCE_NONE, NULL)) != MQTTCLIENT_SUCCESS)
-    {
-        if (chatty)
-            printf("MQTTClient_create() returned %d\n", rc);
-        return rc;
     }
 
     // copied, modified from https://www.hivemq.com/blog/implementing-mqtt-in-c/
@@ -84,7 +85,6 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     rc = MQTTClient_waitForCompletion(client, token, TIMEOUT);
     printf("Message with delivery token %d delivered\n", token);
     MQTTClient_disconnect(client, 10000);
-    MQTTClient_destroy(&client);
 
     return rc;
 }
