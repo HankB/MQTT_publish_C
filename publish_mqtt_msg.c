@@ -19,16 +19,29 @@ static MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializ
 static char client_id[ID_LEN];
 static const char client_prefix[] = "MQTT_test.";
 static time_t t;
-#define HOSTNAME_LEN 1024
-static char hostname[HOSTNAME_LEN];
+
+static bool mqtt_initiailzed = false;
 
 static int init_mqtt()
 {
+    mqtt_initiailzed = true;
+    return 0;
 }
 
 int publish_mqtt_msg(const char *topic, const char *payload, const char *broker, int QOS)
 {
     int rc;
+
+    if (!mqtt_initiailzed)
+    {
+        rc = init_mqtt();
+        if (0 != rc)
+        {
+            if (chatty)
+                printf("init_mqtt() returned %d\n", rc);
+            return rc;
+        }
+    }
     // prepare some strings used to communicate with broker
     srand((unsigned)time(&t)); // seed RNG
     snprintf(client_id, ID_LEN, "%s%8.8X", client_prefix, rand());
@@ -59,9 +72,9 @@ int publish_mqtt_msg(const char *topic, const char *payload, const char *broker,
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     MQTTClient_deliveryToken token;
 
-    #define TOPIC "This/is/only/a/test."
-    #define PAYLOAD "Had this been an actual emergency..."
-    #define TIMEOUT     10000L
+#define TOPIC "This/is/only/a/test."
+#define PAYLOAD "Had this been an actual emergency..."
+#define TIMEOUT 10000L
     pubmsg.payload = PAYLOAD;
     pubmsg.payloadlen = strlen(PAYLOAD);
     pubmsg.qos = QOS;
